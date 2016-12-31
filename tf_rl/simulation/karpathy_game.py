@@ -7,7 +7,8 @@ import time
 from collections import defaultdict
 from euclid import Circle, Point2, Vector2, LineSegment2
 
-import tf_rl.utils.svg as svg
+from ..utils import svg
+from IPython.display import clear_output, display, HTML
 
 class GameObject(object):
     def __init__(self, position, speed, obj_type, settings):
@@ -79,10 +80,10 @@ class KarpathyGame(object):
         # every observation_line sees one of objects or wall and
         # two numbers representing speed of the object (if applicable)
         self.eye_observation_size = len(self.settings["objects"]) + 3
-        # additionally there are two numbers representing agents own speed.
-        self.observation_size = self.eye_observation_size * len(self.observation_lines) + 2
+        # additionally there are two numbers representing agents own speed and position.
+        self.observation_size = self.eye_observation_size * len(self.observation_lines) + 2 + 2
 
-        self.directions = [Vector2(*d) for d in [[1,0], [0,1], [-1,0],[0,-1]]]
+        self.directions = [Vector2(*d) for d in [[1,0], [0,1], [-1,0],[0,-1],[0.0,0.0]]]
         self.num_actions      = len(self.directions)
 
         self.objects_eaten = defaultdict(lambda: 0)
@@ -90,7 +91,7 @@ class KarpathyGame(object):
     def perform_action(self, action_id):
         """Change speed to one of hero vectors"""
         assert 0 <= action_id < self.num_actions
-        self.hero.speed *= 0.8
+        self.hero.speed *= 0.5
         self.hero.speed += self.directions[action_id] * self.settings["delta_v"]
 
     def spawn_object(self, obj_type):
@@ -210,6 +211,12 @@ class KarpathyGame(object):
 
         observation[observation_offset]     = self.hero.speed[0] / max_speed_x
         observation[observation_offset + 1] = self.hero.speed[1] / max_speed_y
+        observation_offset += 2
+        
+        # add normalized locaiton of the hero in environment        
+        observation[observation_offset]     = self.hero.position[0] / 350.0 - 1.0
+        observation[observation_offset + 1] = self.hero.position[1] / 250.0 - 1.0
+        
         assert observation_offset + 2 == self.observation_size
 
         return observation
@@ -290,3 +297,21 @@ class KarpathyGame(object):
 
         return scene
 
+    def setup_draw(self):
+        """
+        An optional method to be triggered in simulate(...) to initialise
+        the figure handles for rendering.
+        simulate(...) will run with/without this method declared in the simulation class
+        As we are using SVG strings in KarpathyGame, it is not curently used.
+        """
+        pass
+
+    def draw(self, stats=[]):
+        """
+        An optional method to be triggered in simulate(...) to render the simulated environment.
+        It is repeatedly called in each simulated iteration.
+        simulate(...) will run with/without this method declared in the simulation class.
+        """
+        clear_output(wait=True)
+        svg_html = self.to_html(stats)
+        display(svg_html)

@@ -13,6 +13,7 @@ Check out Karpathy game in `notebooks` folder.
 
 - `future==0.15.2`
 - `euclid==0.1`
+- `inkscape` (for animation gif creation)
 
 ## How does this all fit together.
 
@@ -23,8 +24,8 @@ Want to have some fun controlling the simulation by yourself? You got it!
 Use `tf_rl.controller.HumanController` in your simulation.
 
 To issue commands run in terminal
-```python2
-python2 tf_rl/controller/human_controller.py
+```python3
+python3 tf_rl/controller/human_controller.py
 ```
 For it to work you also need to have a redis server running locally.
 
